@@ -2,6 +2,8 @@ package com.mygdx.mazerunmanch14;
 
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
+import java.util.ArrayList;
+
 public class Room extends BaseActor {
     public static final int NORTH = 0;
     public static final int SOUTH = 1;
@@ -11,6 +13,11 @@ public class Room extends BaseActor {
 
     private Wall[] wallArray;
     private Room[] neighborArray;
+
+    private boolean connected;
+
+    private boolean visited;
+    private Room previousRoom;
 
     public Room(float x, float y, Stage s) {
         super(x, y, s);
@@ -31,6 +38,10 @@ public class Room extends BaseActor {
 
         neighborArray = new Room[4];
         // contents of this array will be initialized by Maze class
+
+        connected = false;
+
+        visited = false;
     }
 
     public void setNeighbor(int direction, Room neighbor) {
@@ -68,5 +79,63 @@ public class Room extends BaseActor {
             this.wallArray[WEST].remove();
             other.wallArray[EAST].remove();
         }
+    }
+
+    public void setConnected(boolean b) {
+        connected = b;
+    }
+
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public boolean hasUnconnectedNeighbor() {
+        for (int direction : directionArray) {
+            if (hasNeighbor(direction) && !getNeighbor(direction).isConnected())
+                return true;
+        }
+
+        return false;
+    }
+
+    public Room getRandomUnconnectedNeighbor() {
+        ArrayList<Integer> directionList = new ArrayList<Integer>();
+
+        for (int direction : directionArray) {
+            if (hasNeighbor(direction) && !getNeighbor(direction).isConnected())
+                directionList.add(direction);
+        }
+
+        int directionIndex = (int) Math.floor(Math.random() * directionList.size());
+        int direction = directionList.get(directionIndex);
+        return getNeighbor(direction);
+    }
+
+    public void setVisited(boolean b) {
+        visited = b;
+    }
+
+    public boolean isVisited() {
+        return visited;
+    }
+
+    public void setPreviousRoom(Room r) {
+        previousRoom = r;
+    }
+
+    public Room getPreviousRoom() {
+        return previousRoom;
+    }
+
+    // Used in pathfinding: locate accessible neighbors that have not yet been visited
+    public ArrayList<Room> unvisitedPathList() {
+        ArrayList<Room> list = new ArrayList<Room>();
+
+        for (int direction : directionArray) {
+            if (hasNeighbor(direction) && !hasWall(direction) && !getNeighbor(direction).isVisited())
+                list.add(getNeighbor(direction));
+        }
+
+        return list;
     }
 }
